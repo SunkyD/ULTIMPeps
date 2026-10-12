@@ -24,6 +24,22 @@
   async function pullSettings(){
     const {data,error}=await sb.from("store_settings").select("key,value").in("key",Object.values(settingsKeys));
     if(error){console.warn("Réglages partagés indisponibles:",error.message);return}
+    // Si aucun réglage n'a encore été publié, initialise Supabase depuis le navigateur admin.
+    // Les valeurs distantes existantes restent prioritaires et ne sont jamais écrasées au démarrage.
+    if(isAdmin){
+      const present=new Set((data||[]).map(row=>row.key));
+      for(const localKey of Object.keys(settingsKeys)){
+        const remoteKey=settingsKeys[localKey];
+        if(present.has(remoteKey))continue;
+        let raw=null;try{raw=localStorage.getItem(localKey)}catch(e){}
+        if(raw==null)continue;
+        try{
+          const value=JSON.parse(raw);
+          const {error:seedError}=await sb.from("store_settings").insert({key:remoteKey,value});
+          if(seedError&&seedError.code!=="23505")console.warn("Publication initiale du réglage impossible:",remoteKey,seedError.message);
+        }catch(e){}
+      }
+    }
     applyingRemote=true;
     try{
       for(const row of data||[]){
