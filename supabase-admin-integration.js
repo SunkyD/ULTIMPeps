@@ -136,6 +136,12 @@
     await pushNewsletter();
   }
   window.ULTIM_SYNC={
+    submitOrder:async(order)=>{
+      if(!order||!order.id||!order.cu||!order.cu.e)throw new Error("Commande invalide");
+      const {data,error}=await sb.rpc("submit_store_order",{p_id:String(order.id),p_customer_email:String(order.cu.e),p_data:order});
+      if(error)throw error;
+      return data;
+    },
     subscribeNewsletter:async(email,source)=>{
       const {data,error}=await sb.rpc("newsletter_signup",{p_email:email,p_source:source||null});
       if(error)throw error;
