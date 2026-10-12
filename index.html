@@ -651,7 +651,15 @@ document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');i
 $("hv").innerHTML=[["v2","#0a6cff"],["v3","#00d4ff"],["v1","#1e90ff"]].map(a=>`<div class="hvv ${a[0]}">${vial(a[1])}</div>`).join("");
 const getN=()=>{try{const a=JSON.parse(localStorage.getItem("up_n")||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}};
 function nsub(e,src){e.preventDefault();const f=e.target,em=f.querySelector("input").value.trim().toLowerCase(),N=getN();
-if(N.some(x=>x.e==em)){toast("Tu es déjà inscrit ✔")}else{N.unshift({e:em,t:Date.now(),...(src?{s:src}:{})});try{localStorage.setItem("up_n",JSON.stringify(N))}catch(x){toast("Erreur d'enregistrement");return}loadK();toast(src=="pre"?"Tu es sur la liste ✔ On te prévient dès l'ouverture.":"Inscription confirmée ✔"+(K.some(k=>k.c=="BIENVENUE10")?" Code BIENVENUE10":""))}f.reset()}
+if(N.some(x=>x.e==em)){toast("Tu es déjà inscrit ✔");f.reset();return}
+const entry={e:em,t:Date.now(),...(src?{s:src}:{})};N.unshift(entry);
+try{localStorage.setItem("up_n",JSON.stringify(N))}catch(x){toast("Erreur d'enregistrement");return}
+loadK();f.reset();
+const success=()=>toast(src=="pre"?"Tu es sur la liste ✔ On te prévient dès l'ouverture.":"Inscription confirmée ✔"+(K.some(k=>k.c=="BIENVENUE10")?" Code BIENVENUE10":""));
+if(window.ULTIM_SYNC&&typeof window.ULTIM_SYNC.subscribeNewsletter==="function"){
+ window.ULTIM_SYNC.subscribeNewsletter(em,src).then(success).catch(err=>{console.warn("Inscription newsletter distante impossible:",err);toast("Inscription enregistrée sur cet appareil, mais synchronisation impossible. Réessaie plus tard.")});
+}else success()
+}
 function nlist(){const N=getN(),wk=Date.now()-7*864e5;
 $("nk").innerHTML=[["Inscrits",N.length],["Cette semaine",N.filter(x=>x.t>wk).length]].map(a=>`<div class="kp"><small>${a[0]}</small><b>${a[1]}</b></div>`).join("");
 $("nl2").innerHTML=N.length?N.map(n=>`<div class="ar" style="grid-template-columns:1fr auto auto"><b style="text-transform:none;word-break:break-all">${esc(n.e)}</b><small>${fd(n.t)}${n.s=="pre"?" · pré-lancement":""}</small><button data-e="${esc(n.e)}" onclick="ndel(this)">Supprimer</button></div>`).join(""):`<p class="sub">Aucun inscrit pour le moment.</p>`;
@@ -902,6 +910,6 @@ addEventListener("resize",rs);rs();an();
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=20261012a"></script>
 <script src="supabase-integration.js?v=82e00e0"></script>
-<script src="supabase-admin-integration.js?v=b830645"></script>
+<script src="supabase-admin-integration.js?v=phase1sync1"></script>
 </body>
 </html>
