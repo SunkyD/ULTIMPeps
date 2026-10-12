@@ -96,6 +96,26 @@
     const rows=local.filter(p=>p&&p.id!=null).map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));
     if(rows.length){const {error}=await sb.from("store_packs").upsert(rows,{onConflict:"id"});if(error)throw error}
   }
+  async function pushOrders(){
+    if(!isAdmin)return;
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_o")||"[]")}catch(e){}
+    if(!Array.isArray(local)||!local.length)return;
+    const rows=local.filter(o=>o&&o.id&&o.cu&&o.cu.e).map(o=>({id:String(o.id),customer_email:String(o.cu.e).trim().toLowerCase(),data:o,updated_at:new Date().toISOString()}));
+    if(rows.length){const {error}=await sb.from("store_orders").upsert(rows,{onConflict:"id"});if(error)throw error}
+  }
+  async function pullOrders(){
+    if(!isAdmin)return;
+    const {data,error}=await sb.from("store_orders").select("id,customer_email,data,updated_at");
+    if(error){console.warn("Commandes partagées indisponibles:",error.message);return}
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_o")||"[]")}catch(e){}
+    if(!Array.isArray(local))local=[];
+    const merged=new Map(local.filter(o=>o&&o.id).map(o=>[String(o.id),o]));
+    for(const row of data||[])if(row.data&&row.id)merged.set(String(row.id),row.data);
+    applyingRemote=true;
+    try{localStorage.setItem("up_o",JSON.stringify([...merged.values()]))}finally{applyingRemote=false}
+    try{if(typeof loadO==="function")loadO();if(typeof olist==="function")olist()}catch(e){}
+    await pushOrders();
+  }
   async function pushNewsletter(){
     if(!isAdmin)return;
     let local=[];try{local=JSON.parse(localStorage.getItem("up_n")||"[]")}catch(e){}
@@ -131,6 +151,7 @@
       }
       if(key==="up_pk"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPacks()}).catch(e=>console.error("Sync packs échouée:",e.message));}
       if(key==="up_n"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushNewsletter()}).catch(e=>console.error("Sync newsletter échouée:",e.message));}
+      if(key==="up_o"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushOrders()}).catch(e=>console.error("Sync commandes échouée:",e.message));}
       if(key==="up_k"){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPromos()}).catch(e=>console.error("Sync promos échouée:",e.message));
       }
@@ -142,14 +163,16 @@
     await pullSettings();
     await pullPacks();
     await pullNewsletter();
+    await pullOrders();
     await pullPromos();
     if(isAdmin){await pushPromos().catch(e=>console.warn("Publication des codes promo impossible:",e.message))}
     sb.channel("ultim-admin-sync")
       .on("postgres_changes",{event:"*",schema:"public",table:"store_settings"},()=>pullSettings())
       .on("postgres_changes",{event:"*",schema:"public",table:"store_newsletter"},()=>pullNewsletter())
+      .on("postgres_changes",{event:"*",schema:"public",table:"store_orders"},()=>pullOrders())
       .on("postgres_changes",{event:"*",schema:"public",table:"promo_codes"},()=>pullPromos())
       .subscribe();
   }
-  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pushPromos().catch(console.warn)}})},0)});
+  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pullOrders();pushPromos().catch(console.warn)}})},0)});
   init().catch(e=>console.warn("Initialisation synchro admin:",e.message));
 })();
