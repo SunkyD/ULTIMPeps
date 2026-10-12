@@ -303,7 +303,7 @@ window.ULTIM_CONFIG = {
   supabaseAnonKey: ""
 };
 const fq=q=>String(q).replace(".",",")+" mg",mp=p=>p.co?coMin(p):Math.min(...p.v.map(x=>x.p)),mv=p=>p.co?{q:0,p:coMin(p)}:p.v.reduce((a,b)=>b.p<a.p?b:a);
-const norm=p=>{if(!Array.isArray(p.v)||!p.v.length){const m=[1,1.8,2.6];p.v=[15,30,50].map((q,i)=>{const o={q,p:+((+p.p||0)*m[i]).toFixed(2)};if(i==0&&p.old>o.p)o.o=p.old;return o})}delete p.p;delete p.old;if(p.img&&!/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(p.img))delete p.img;if(!/^#[0-9a-f]{3,8}$/i.test(p.col||""))p.col="#1e90ff";if(p.co&&!Array.isArray(p.co.f))delete p.co;if(p.co&&JSON.stringify(p.co.tiers)=="[[3,3],[6,5],[8,10]]")p.co.tiers=[[3,5],[6,10],[10,15]];p.v.sort((a,b)=>a.q-b.q);return p};
+const norm=p=>{if(!Array.isArray(p.v)||!p.v.length){const m=[1,1.8,2.6];p.v=[15,30,50].map((q,i)=>{const o={q,p:+((+p.p||0)*m[i]).toFixed(2)};if(i==0&&p.old>o.p)o.o=p.old;return o})}delete p.p;delete p.old;if(p.img&&!/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(p.img)&&!/^https:\/\//i.test(p.img))delete p.img;if(!/^#[0-9a-f]{3,8}$/i.test(p.col||""))p.col="#1e90ff";if(p.co&&!Array.isArray(p.co.f))delete p.co;if(p.co&&JSON.stringify(p.co.tiers)=="[[3,3],[6,5],[8,10]]")p.co.tiers=[[3,5],[6,10],[10,15]];p.v.sort((a,b)=>a.q-b.q);return p};
 let P=[];try{P=JSON.parse(document.getElementById("pdata").textContent)}catch(e){}
 const SH=5,FREE=100,PIP=4.99;
 let cat="Tous",C=[],W=[],promo=null,cur=null;
@@ -899,5 +899,8 @@ function an(){cx.clearRect(0,0,cv.width,cv.height);const g=cx.createRadialGradie
 pts.forEach((a,i)=>{a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>cv.width)a.vx*=-1;if(a.y<0||a.y>cv.height)a.vy*=-1;cx.fillStyle="#1e90ff";cx.fillRect(a.x,a.y,2,2);for(let j=i+1;j<pts.length;j++){const b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<130){cx.strokeStyle="rgba(30,144,255,"+(1-d/130)*.3+")";cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}}});requestAnimationFrame(an)}
 addEventListener("resize",rs);rs();an();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="supabase-integration.js"></script>
 </body>
 </html>
