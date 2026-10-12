@@ -74,6 +74,47 @@
     applyingRemote=true;
     try{localStorage.setItem("up_k",JSON.stringify(merged))}catch(e){}finally{applyingRemote=false}
   }
+  async function pullPacks(){
+    const {data,error}=await sb.from("store_packs").select("id,data,published").eq("published",true);
+    if(error){console.warn("Packs partagés indisponibles:",error.message);return}
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_pk")||"[]")}catch(e){}
+    if(!Array.isArray(local))local=[];
+    const remote=(data||[]).map(r=>r.data).filter(p=>p&&p.id!=null);
+    if(isAdmin){
+      const merged=new Map(remote.map(p=>[String(p.id),p]));
+      for(const p of local)if(p&&p.id!=null&&!merged.has(String(p.id)))merged.set(String(p.id),p);
+      const all=[...merged.values()];
+      if(all.length){const rows=all.map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));const {error:e}=await sb.from("store_packs").upsert(rows,{onConflict:"id"});if(e)console.warn("Publication des packs impossible:",e.message)}
+      applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(all))}finally{applyingRemote=false}
+    }else if(remote.length){applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote))}finally{applyingRemote=false}}
+    try{if(typeof pklist==="function")pklist();if(typeof prender==="function")prender()}catch(e){}
+  }
+  async function pushNewsletter(){
+    if(!isAdmin)return;
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_n")||"[]")}catch(e){}
+    if(!Array.isArray(local)||!local.length)return;
+    const rows=local.filter(n=>n&&n.e).map(n=>({email:String(n.e).trim().toLowerCase(),data:{s:n.s||null,t:n.t||null}}));
+    if(rows.length){const {error}=await sb.from("store_newsletter").upsert(rows,{onConflict:"email",ignoreDuplicates:true});if(error)throw error}
+  }
+  async function pullNewsletter(){
+    if(!isAdmin)return;
+    const {data,error}=await sb.from("store_newsletter").select("email,data,created_at");
+    if(error){console.warn("Newsletter partagée indisponible:",error.message);return}
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_n")||"[]")}catch(e){}
+    if(!Array.isArray(local))local=[];
+    const merged=new Map(local.filter(n=>n&&n.e).map(n=>[String(n.e).toLowerCase(),n]));
+    for(const r of data||[])if(r.email&&!merged.has(r.email.toLowerCase()))merged.set(r.email.toLowerCase(),{e:r.email,t:r.data?.t||Date.parse(r.created_at)||Date.now(),...(r.data?.s?{s:r.data.s}:{})});
+    applyingRemote=true;try{localStorage.setItem("up_n",JSON.stringify([...merged.values()]))}finally{applyingRemote=false}
+    try{if(typeof nlist==="function")nlist()}catch(e){}
+    await pushNewsletter();
+  }
+  window.ULTIM_SYNC={
+    subscribeNewsletter:async(email,source)=>{
+      const {data,error}=await sb.rpc("newsletter_signup",{p_email:email,p_source:source||null});
+      if(error)throw error;
+      return data;
+    }
+  };
   const originalSet=Storage.prototype.setItem;
   Storage.prototype.setItem=function(key,value){
     const result=originalSet.call(this,key,value);
@@ -81,7 +122,7 @@
       if(settingsKeys[key]){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushSetting(key,settingsKeys[key],String(value))}).catch(e=>console.error("Sync réglage échouée:",e.message));
       }
-      if(key==="up_k"){
+      if(key==="up_pk"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pullPacks()}).catch(e=>console.error("Sync packs échouée:",e.message));}\n      if(key==="up_n"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushNewsletter()}).catch(e=>console.error("Sync newsletter échouée:",e.message));}\n      if(key==="up_k"){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPromos()}).catch(e=>console.error("Sync promos échouée:",e.message));
       }
     }
@@ -90,13 +131,17 @@
   async function init(){
     isAdmin=await getSession();
     await pullSettings();
+    await pullPacks();
+    await pullNewsletter();
     await pullPromos();
     if(isAdmin){await pushPromos().catch(e=>console.warn("Publication des codes promo impossible:",e.message))}
     sb.channel("ultim-admin-sync")
       .on("postgres_changes",{event:"*",schema:"public",table:"store_settings"},()=>pullSettings())
+      .on("postgres_changes",{event:"*",schema:"public",table:"store_packs"},()=>pullPacks())
+      .on("postgres_changes",{event:"*",schema:"public",table:"store_newsletter"},()=>pullNewsletter())
       .on("postgres_changes",{event:"*",schema:"public",table:"promo_codes"},()=>pullPromos())
       .subscribe();
   }
-  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pushPromos().catch(console.warn)}})},0)});
+  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pushPromos().catch(console.warn)}})},0)});
   init().catch(e=>console.warn("Initialisation synchro admin:",e.message));
 })();
