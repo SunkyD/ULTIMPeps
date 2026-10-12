@@ -2,6 +2,6 @@
 // Ne jamais placer une clé service_role ou un secret dans ce dépôt.
 window.ULTIM_CONFIG = {
   supabaseUrl: "https://sprcwibfjhorbfogqvfg.supabase.co",
-  supabaseAnonKey: "sb_publishable_nfLrJ6FxRkFhxCGAeUPleg_1wNA3cC",
+  supabaseAnonKey: "sb_publishable_nfLrJ6FxRkFhxCGAeUPleg_1wNA3cC2",
   adminEmail: "logan.decupper1@gmail.com"
 };
