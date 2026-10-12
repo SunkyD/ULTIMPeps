@@ -78,7 +78,17 @@
     if(error){const err=byId("sbErr");if(err)err.textContent="Connexion refusée. Vérifie le mot de passe et que l'utilisateur existe dans Supabase Auth.";return;}
     session=data.session;
     if(String(session?.user?.email||"").toLowerCase()!==adminEmail){await sb.auth.signOut();session=null;return say("Ce compte n'est pas autorisé à administrer la boutique.");}
-    try{await syncProducts()}catch(e){console.error("Synchronisation initiale impossible:",e);say("Connexion réussie, mais synchronisation impossible : "+(e.message||"vérifie les politiques RLS et Storage."));}
+    // Fusionne d'abord le catalogue distant avec le catalogue local pour éviter d'écraser
+    // les produits déjà publiés lors de la première connexion sur cet appareil.
+    try{
+      const {data:remote,error:readError}=await sb.from("products").select("data");
+      if(readError)throw readError;
+      const merged=new Map();
+      for(const row of (remote||[])){const p=row.data;if(p&&p.id!=null)merged.set(String(p.id),p);}
+      for(const p of P){if(p&&p.id!=null)merged.set(String(p.id),p);}
+      P.splice(0,P.length,...merged.values());
+      await syncProducts();
+    }catch(e){console.error("Synchronisation initiale impossible:",e);say("Connexion réussie, mais synchronisation impossible : "+(e.message||"vérifie les politiques RLS et Storage."));}
     byId("ad").classList.add("on");byId("lg").style.display="none";byId("ap").style.display="";
     try{areset();alist();olist();tabs(tab);idle()}catch(e){console.error(e)}
     say("Administration connectée ✔");
