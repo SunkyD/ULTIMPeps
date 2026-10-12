@@ -85,8 +85,8 @@
       for(const p of local)if(p&&p.id!=null&&!merged.has(String(p.id)))merged.set(String(p.id),p);
       const all=[...merged.values()];
       if(all.length){const rows=all.map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));const {error:e}=await sb.from("store_packs").upsert(rows,{onConflict:"id"});if(e)console.warn("Publication des packs impossible:",e.message)}
-      applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(all))}finally{applyingRemote=false}
-    }else if(remote.length){applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote))}finally{applyingRemote=false}}
+      applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(all));if(typeof PK!=="undefined")PK.splice(0,PK.length,...all)}finally{applyingRemote=false}
+    }else if(remote.length){applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote));if(typeof PK!=="undefined")PK.splice(0,PK.length,...remote)}finally{applyingRemote=false}}
     try{if(typeof pklist==="function")pklist();if(typeof prender==="function")prender()}catch(e){}
   }
   async function pushNewsletter(){
