@@ -56,11 +56,12 @@
     try{localStorage.setItem("up_p",JSON.stringify(P))}catch(e){}
   }
   function queueSync(){
-    syncing=syncing.then(()=>syncProducts()).catch(e=>{console.error("Échec de synchronisation Supabase:",e);say("Produit enregistré sur cet appareil, mais synchronisation Supabase échouée : "+(e.message||"vérifie les règles SQL et le compte admin."));});
+    say("Synchronisation Supabase en cours…");
+    syncing=syncing.then(()=>syncProducts()).then(()=>{say("Synchronisation Supabase réussie ✔");}).catch(e=>{console.error("Échec de synchronisation Supabase:",e);say("Produit enregistré sur cet appareil, mais synchronisation Supabase échouée : "+(e.message||"vérifie les règles SQL et le compte admin."));});
   }
   // store() reste synchrone pour ne pas casser les formulaires existants ; la synchro distante est mise en file.
   store=function(){
-    try{localStorage.setItem("up_p",JSON.stringify(P));if(session)queueSync();return 1}
+    try{localStorage.setItem("up_p",JSON.stringify(P));if(session)queueSync();else say("Catalogue local uniquement : session Supabase absente. Déconnecte-toi puis reconnecte-toi à l’administration.");return 1}
     catch(e){say("Stockage local indisponible.");return 0}
   };
   gate=function(mode){
