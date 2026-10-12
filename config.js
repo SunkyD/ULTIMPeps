@@ -1,8 +1,7 @@
-// Configuration publique du site : aucun secret ici.
-// La clé "anon" de Supabase est publique par conception (elle est protégée par les règles RLS de la base).
-// Ne mets JAMAIS la clé "service_role" dans ce fichier ni dans le dépôt GitHub.
-// (utilisé à l'étape de branchement de Supabase)
+// Configuration publique du site. Cette clé est publique par conception ; la sécurité repose sur les politiques RLS Supabase.
+// Ne jamais placer une clé service_role ou un secret dans ce dépôt.
 window.ULTIM_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: ""
+  supabaseUrl: "https://sprcwibfjhorbfogqvfg.supabase.co",
+  supabaseAnonKey: "sb_publishable_nfLrJ6FxRkFhxCGAeUPleg_1wNA3cC",
+  adminEmail: "logan.decupper1@gmail.com"
 };
