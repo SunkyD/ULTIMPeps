@@ -75,18 +75,27 @@
     try{localStorage.setItem("up_k",JSON.stringify(merged))}catch(e){}finally{applyingRemote=false}
   }
   async function pullPacks(){
-    const {data,error}=await sb.from("store_packs").select("id,data,published").eq("published",true);
+    // Admin : lire aussi les packs masqués pour qu'un ancien cache local ne les republie pas.
+    // Visiteur : ne lire que les packs publiés.
+    const query=sb.from("store_packs").select("id,data,published");
+    const {data,error}=isAdmin?await query:await query.eq("published",true);
     if(error){console.warn("Packs partagés indisponibles:",error.message);return}
     let local=[];try{local=JSON.parse(localStorage.getItem("up_pk")||"[]")}catch(e){}
     if(!Array.isArray(local))local=[];
-    const remote=(data||[]).map(r=>r.data).filter(p=>p&&p.id!=null);
+    const rows=data||[];
+    const remote=rows.filter(r=>r.published&&r.data&&r.data.id!=null).map(r=>r.data);
     if(isAdmin){
+      const knownIds=new Set(rows.map(r=>String(r.id)));
       const merged=new Map(remote.map(p=>[String(p.id),p]));
-      for(const p of local)if(p&&p.id!=null&&!merged.has(String(p.id)))merged.set(String(p.id),p);
+      // Garder les packs uniquement locaux, mais jamais ressusciter un pack masqué dans Supabase.
+      for(const p of local)if(p&&p.id!=null&&!knownIds.has(String(p.id))&&!merged.has(String(p.id)))merged.set(String(p.id),p);
       const all=[...merged.values()];
-      if(all.length){const rows=all.map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));const {error:e}=await sb.from("store_packs").upsert(rows,{onConflict:"id"});if(e)console.warn("Publication des packs impossible:",e.message)}
+      if(all.length){const upserts=all.map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));const {error:e}=await sb.from("store_packs").upsert(upserts,{onConflict:"id"});if(e)console.warn("Publication des packs impossible:",e.message)}
       applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(all));if(typeof PK!=="undefined")PK.splice(0,PK.length,...all)}finally{applyingRemote=false}
-    }else if(remote.length){applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote));if(typeof PK!=="undefined")PK.splice(0,PK.length,...remote)}finally{applyingRemote=false}}
+    }else{
+      // Remplacer aussi par une liste vide : sinon les packs du cache navigateur restent visibles.
+      applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote));if(typeof PK!=="undefined")PK.splice(0,PK.length,...remote)}finally{applyingRemote=false}
+    }
     try{if(typeof pklist==="function")pklist();if(typeof prender==="function")prender()}catch(e){}
   }
   async function pushPacks(){
