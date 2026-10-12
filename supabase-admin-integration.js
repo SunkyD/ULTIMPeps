@@ -89,6 +89,13 @@
     }else if(remote.length){applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote));if(typeof PK!=="undefined")PK.splice(0,PK.length,...remote)}finally{applyingRemote=false}}
     try{if(typeof pklist==="function")pklist();if(typeof prender==="function")prender()}catch(e){}
   }
+  async function pushPacks(){
+    if(!isAdmin)return;
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_pk")||"[]")}catch(e){}
+    if(!Array.isArray(local)||!local.length)return;
+    const rows=local.filter(p=>p&&p.id!=null).map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));
+    if(rows.length){const {error}=await sb.from("store_packs").upsert(rows,{onConflict:"id"});if(error)throw error}
+  }
   async function pushNewsletter(){
     if(!isAdmin)return;
     let local=[];try{local=JSON.parse(localStorage.getItem("up_n")||"[]")}catch(e){}
@@ -122,7 +129,7 @@
       if(settingsKeys[key]){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushSetting(key,settingsKeys[key],String(value))}).catch(e=>console.error("Sync réglage échouée:",e.message));
       }
-      if(key==="up_pk"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pullPacks()}).catch(e=>console.error("Sync packs échouée:",e.message));}\n      if(key==="up_n"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushNewsletter()}).catch(e=>console.error("Sync newsletter échouée:",e.message));}\n      if(key==="up_k"){
+      if(key==="up_pk"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPacks()}).catch(e=>console.error("Sync packs échouée:",e.message));}\n      if(key==="up_n"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushNewsletter()}).catch(e=>console.error("Sync newsletter échouée:",e.message));}\n      if(key==="up_k"){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPromos()}).catch(e=>console.error("Sync promos échouée:",e.message));
       }
     }
@@ -137,7 +144,6 @@
     if(isAdmin){await pushPromos().catch(e=>console.warn("Publication des codes promo impossible:",e.message))}
     sb.channel("ultim-admin-sync")
       .on("postgres_changes",{event:"*",schema:"public",table:"store_settings"},()=>pullSettings())
-      .on("postgres_changes",{event:"*",schema:"public",table:"store_packs"},()=>pullPacks())
       .on("postgres_changes",{event:"*",schema:"public",table:"store_newsletter"},()=>pullNewsletter())
       .on("postgres_changes",{event:"*",schema:"public",table:"promo_codes"},()=>pullPromos())
       .subscribe();
