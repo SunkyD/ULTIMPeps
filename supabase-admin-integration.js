@@ -1,0 +1,86 @@
+/* Synchronisation des réglages publics et codes promo ULTIM'Peps. */
+(function(){
+  "use strict";
+  const sb=window.ULTIM_SUPABASE;
+  if(!sb)return;
+  const ADMIN="logan.decupper1@gmail.com";
+  const settingsKeys={
+    up_ct:"storefront_content",
+    up_s:"storefront_shipping",
+    up_pay:"storefront_payment",
+    up_pre:"storefront_prelaunch"
+  };
+  let isAdmin=false, applyingRemote=false, chain=Promise.resolve();
+  const getSession=async()=>{
+    const {data}=await sb.auth.getSession();
+    return String(data?.session?.user?.email||"").toLowerCase()===ADMIN;
+  };
+  async function pushSetting(localKey, remoteKey, raw){
+    if(!isAdmin||applyingRemote||raw==null)return;
+    let value;try{value=JSON.parse(raw)}catch(e){return}
+    const {error}=await sb.from("store_settings").upsert({key:remoteKey,value,updated_at:new Date().toISOString()},{onConflict:"key"});
+    if(error)throw error;
+  }
+  async function pullSettings(){
+    const {data,error}=await sb.from("store_settings").select("key,value").in("key",Object.values(settingsKeys));
+    if(error){console.warn("Réglages partagés indisponibles:",error.message);return}
+    applyingRemote=true;
+    try{
+      for(const row of data||[]){
+        const local=Object.keys(settingsKeys).find(k=>settingsKeys[k]===row.key);
+        if(!local)continue;
+        try{localStorage.setItem(local,JSON.stringify(row.value))}catch(e){}
+      }
+      try{if(typeof applyCT==="function")applyCT();if(typeof payLoad==="function")payLoad();if(typeof preApply==="function"){preApply();preTick&&preTick()}if(typeof sfill==="function")sfill()}catch(e){console.warn(e)}
+    }finally{applyingRemote=false}
+  }
+  async function pushPromos(){
+    if(!isAdmin)return;
+    let promos=[];try{promos=JSON.parse(localStorage.getItem("up_k")||"[]")}catch(e){}
+    if(!Array.isArray(promos))return;
+    const rows=promos.filter(k=>k&&k.c).map(k=>({code:String(k.c).toUpperCase(),data:k,active:true,updated_at:new Date().toISOString()}));
+    const {data:existing,error:readError}=await sb.from("promo_codes").select("code");
+    if(readError)throw readError;
+    if(rows.length){const {error}=await sb.from("promo_codes").upsert(rows,{onConflict:"code"});if(error)throw error}
+    const keep=new Set(rows.map(r=>r.code));
+    const stale=(existing||[]).map(r=>r.code).filter(c=>!keep.has(c));
+    if(stale.length){const {error}=await sb.from("promo_codes").delete().in("code",stale);if(error)throw error}
+  }
+  async function pullPromos(){
+    const {data,error}=await sb.from("promo_codes").select("data,code,active").eq("active",true);
+    if(error){console.warn("Codes promo partagés indisponibles:",error.message);return}
+    const remote=(data||[]).map(r=>r.data).filter(k=>k&&k.c);
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_k")||"[]")}catch(e){}
+    if(!Array.isArray(local))local=[];
+    // Les codes personnels/parrainage restent privés et ne sont jamais remplacés par les codes publics.
+    const privateCodes=local.filter(k=>k&&(k.for||k.rw));
+    const merged=[...remote,...privateCodes.filter(k=>!remote.some(r=>r.c===k.c))];
+    applyingRemote=true;
+    try{localStorage.setItem("up_k",JSON.stringify(merged))}catch(e){}finally{applyingRemote=false}
+  }
+  const originalSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+    const result=originalSet.call(this,key,value);
+    if(this===localStorage&&!applyingRemote){
+      if(settingsKeys[key]){
+        chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushSetting(key,settingsKeys[key],String(value))}).catch(e=>console.error("Sync réglage échouée:",e.message));
+      }
+      if(key==="up_k"){
+        chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPromos()}).catch(e=>console.error("Sync promos échouée:",e.message));
+      }
+    }
+    return result;
+  };
+  async function init(){
+    isAdmin=await getSession();
+    await pullSettings();
+    await pullPromos();
+    if(isAdmin){await pushPromos().catch(e=>console.warn("Publication des codes promo impossible:",e.message))}
+    sb.channel("ultim-admin-sync")
+      .on("postgres_changes",{event:"*",schema:"public",table:"store_settings"},()=>pullSettings())
+      .on("postgres_changes",{event:"*",schema:"public",table:"promo_codes"},()=>pullPromos())
+      .subscribe();
+  }
+  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pushPromos().catch(console.warn)}})},0)});
+  init().catch(e=>console.warn("Initialisation synchro admin:",e.message));
+})();
