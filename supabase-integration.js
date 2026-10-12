@@ -49,7 +49,7 @@
     const {data:remote,error:selErr}=await sb.from("products").select("id,data");
     if(selErr)throw selErr;
     const keep=new Set(copy.map(p=>String(p.id)));
-    const stale=(remote||[]).filter(r=>r.data&&r.data.id!=null&&!keep.has(String(r.data.id))).map(r=>r.id);
+    const stale=(remote||[]).filter(r=>!keep.has(String(r.id))&&!keep.has(String(r.data?.id))).map(r=>r.id);
     if(stale.length){const {error:delErr}=await sb.from("products").delete().in("id",stale);if(delErr)throw delErr;}
     // Garde les URL d'images nouvellement téléversées dans le stockage local aussi.
     P.splice(0,P.length,...copy);
@@ -108,7 +108,7 @@
     const {data,error}=await sb.from("products").select("data").eq("published",true);
     if(error){console.warn("Catalogue Supabase indisponible, conservation du catalogue local:",error.message);say("Erreur de lecture du catalogue partagé : "+error.message);return;}
     console.info("Supabase catalogue: lignes publiques reçues =", (data||[]).length); const products=(data||[]).map(r=>r.data).filter(p=>p&&p.n&&p.c);
-    if(products.length||!(P&&P.length)){
+    {
       P.splice(0,P.length,...products);
       try{localStorage.setItem("up_p",JSON.stringify(P))}catch(e){}
       W=W.filter(id=>P.some(p=>p.id==id));
