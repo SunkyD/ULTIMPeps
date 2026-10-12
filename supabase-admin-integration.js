@@ -129,7 +129,9 @@
       if(settingsKeys[key]){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushSetting(key,settingsKeys[key],String(value))}).catch(e=>console.error("Sync réglage échouée:",e.message));
       }
-      if(key==="up_pk"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPacks()}).catch(e=>console.error("Sync packs échouée:",e.message));}\n      if(key==="up_n"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushNewsletter()}).catch(e=>console.error("Sync newsletter échouée:",e.message));}\n      if(key==="up_k"){
+      if(key==="up_pk"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPacks()}).catch(e=>console.error("Sync packs échouée:",e.message));}
+      if(key==="up_n"){chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushNewsletter()}).catch(e=>console.error("Sync newsletter échouée:",e.message));}
+      if(key==="up_k"){
         chain=chain.then(async()=>{isAdmin=await getSession();if(isAdmin)await pushPromos()}).catch(e=>console.error("Sync promos échouée:",e.message));
       }
     }
