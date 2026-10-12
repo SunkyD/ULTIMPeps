@@ -105,8 +105,8 @@
   // Remplace le catalogue local par la version publique partagée quand elle est disponible.
   async function loadShared(){
     const {data,error}=await sb.from("products").select("data").eq("published",true);
-    if(error){console.warn("Catalogue Supabase indisponible, conservation du catalogue local:",error.message);return;}
-    const products=(data||[]).map(r=>r.data).filter(p=>p&&p.n&&p.c);
+    if(error){console.warn("Catalogue Supabase indisponible, conservation du catalogue local:",error.message);say("Erreur de lecture du catalogue partagé : "+error.message);return;}
+    console.info("Supabase catalogue: lignes publiques reçues =", (data||[]).length); const products=(data||[]).map(r=>r.data).filter(p=>p&&p.n&&p.c);
     if(products.length||!(P&&P.length)){
       P.splice(0,P.length,...products);
       try{localStorage.setItem("up_p",JSON.stringify(P))}catch(e){}
