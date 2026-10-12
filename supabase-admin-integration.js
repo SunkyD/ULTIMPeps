@@ -80,22 +80,13 @@
     const query=sb.from("store_packs").select("id,data,published");
     const {data,error}=isAdmin?await query:await query.eq("published",true);
     if(error){console.warn("Packs partagés indisponibles:",error.message);return}
-    let local=[];try{local=JSON.parse(localStorage.getItem("up_pk")||"[]")}catch(e){}
-    if(!Array.isArray(local))local=[];
     const rows=data||[];
     const remote=rows.filter(r=>r.published&&r.data&&r.data.id!=null).map(r=>r.data);
-    if(isAdmin){
-      const knownIds=new Set(rows.map(r=>String(r.id)));
-      const merged=new Map(remote.map(p=>[String(p.id),p]));
-      // Garder les packs uniquement locaux, mais jamais ressusciter un pack masqué dans Supabase.
-      for(const p of local)if(p&&p.id!=null&&!knownIds.has(String(p.id))&&!merged.has(String(p.id)))merged.set(String(p.id),p);
-      const all=[...merged.values()];
-      if(all.length){const upserts=all.map(p=>({id:Number(p.id),data:p,published:true,updated_at:new Date().toISOString()}));const {error:e}=await sb.from("store_packs").upsert(upserts,{onConflict:"id"});if(e)console.warn("Publication des packs impossible:",e.message)}
-      applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(all));if(typeof PK!=="undefined")PK.splice(0,PK.length,...all)}finally{applyingRemote=false}
-    }else{
-      // Remplacer aussi par une liste vide : sinon les packs du cache navigateur restent visibles.
-      applyingRemote=true;try{localStorage.setItem("up_pk",JSON.stringify(remote));if(typeof PK!=="undefined")PK.splice(0,PK.length,...remote)}finally{applyingRemote=false}
-    }
+    // Supabase est la source de vérité : ne jamais republier depuis le cache local
+    // un pack absent ou masqué à distance (cela annulait les suppressions).
+    applyingRemote=true;
+    try{localStorage.setItem("up_pk",JSON.stringify(remote));if(typeof PK!=="undefined")PK.splice(0,PK.length,...remote)}
+    finally{applyingRemote=false}
     try{if(typeof pklist==="function")pklist();if(typeof prender==="function")prender()}catch(e){}
   }
   async function pushPacks(){
