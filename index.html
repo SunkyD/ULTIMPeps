@@ -234,7 +234,7 @@ footer{border-top:1px solid var(--ln);padding:50px 4vw 30px;background:#02040b;c
 <div class="ad" id="ad"><div class="adw">
 <div id="lg" class="co" style="max-width:420px;margin:14vh auto 0"></div>
 <div id="ap" style="display:none">
-<div class="adh"><h2>Admin <em>produits</em></h2><button class="btn o" style="margin:0" onclick="adm(0)">Fermer</button></div>
+<div class="adh"><h2>Admin <em>produits</em></h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="chip" onclick="admLogout()">Déconnexion</button><button class="btn o" style="margin:0" onclick="adm(0)">Fermer</button></div></div>
 <div class="tools" style="margin:18px 0 6px"><button class="chip on" id="tb_p" onclick="tabs('p')">Produits</button><button class="chip" id="tb_o" onclick="tabs('o')">Commandes<span class="cnt" id="nb" style="display:none"></span></button><button class="chip" id="tb_s" onclick="tabs('s')">Stats</button><button class="chip" id="tb_k" onclick="tabs('k')">Codes promo</button><button class="chip" id="tb_n" onclick="tabs('n')">Inscrits</button><button class="chip" id="tb_u" onclick="tabs('u')">Clients</button><button class="chip" id="tb_x" onclick="tabs('x')">Packs</button><button class="chip" id="tb_c" onclick="tabs('c')">Contenu</button><button class="chip" id="tb_y" onclick="tabs('y')">Paiement</button><button class="chip" id="tb_z" onclick="tabs('z')">Pré-lancement</button><button class="chip" id="tb_r" onclick="tabs('r')">Rétractations<span class="cnt" id="rtn" style="display:none"></span></button><span class="live">● En direct</span></div>
 <div id="tp"><p class="sub">Ajoute, modifie ou supprime tes produits. Ils sont enregistrés dans ce navigateur.</p>
 <form class="co" id="af" onsubmit="asave(event)">
