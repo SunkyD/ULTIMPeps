@@ -78,6 +78,7 @@
     if(error){const err=byId("sbErr");if(err)err.textContent="Connexion refusée. Vérifie le mot de passe et que l'utilisateur existe dans Supabase Auth.";return;}
     session=data.session;
     if(String(session?.user?.email||"").toLowerCase()!==adminEmail){await sb.auth.signOut();session=null;return say("Ce compte n'est pas autorisé à administrer la boutique.");}
+    try{await syncProducts()}catch(e){console.error("Synchronisation initiale impossible:",e);say("Connexion réussie, mais synchronisation impossible : "+(e.message||"vérifie les politiques RLS et Storage."));}
     byId("ad").classList.add("on");byId("lg").style.display="none";byId("ap").style.display="";
     try{areset();alist();olist();tabs(tab);idle()}catch(e){console.error(e)}
     say("Administration connectée ✔");
