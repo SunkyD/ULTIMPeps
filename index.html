@@ -350,6 +350,7 @@ const tkw=["Peptides premium","Pureté 99 %","Expédition 48 h","Paiement sécur
 $("tk").innerHTML=(tkw.map(w=>`${w}<i>◆</i>`).join("")).repeat(4);
 let ed=null,img=null,auth=0,gm="login",idleT=null,AH=null;try{AH=JSON.parse(localStorage.getItem("up_ah")||"null")}catch(e){}
 function store(){try{localStorage.setItem("up_p",JSON.stringify(P));return 1}catch(e){toast("Stockage plein : utilise des photos plus légères");return 0}}
+function admLogout(){auth=0;clearTimeout(idleT);try{const sb=window.ULTIM_SUPABASE;if(sb&&sb.auth&&typeof sb.auth.signOut==="function")sb.auth.signOut().catch(e=>console.warn("Déconnexion Supabase:",e))}catch(e){console.warn("Déconnexion:",e)}adm(0);toast("Déconnexion réussie")}
 function adm(o){$("ad").classList.toggle("on",!!o);if(!o){auth=0;clearTimeout(idleT);return}$("lg").style.display=auth?"none":"";$("ap").style.display=auth?"":"none";if(auth){areset();alist();olist();tabs(tab);idle()}else gate(AH?"login":"setup")}
 function alog(){return aok()}
 function rnd(n){return[...crypto.getRandomValues(new Uint8Array(n))].map(x=>x.toString(16).padStart(2,"0")).join("")}
