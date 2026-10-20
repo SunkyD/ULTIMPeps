@@ -116,6 +116,36 @@
     try{if(typeof loadO==="function")loadO();if(typeof olist==="function")olist()}catch(e){}
     await pushOrders();
   }
+  async function pullClientsAndReferrals(){
+    if(!isAdmin)return;
+    const [customers,referrals]=await Promise.all([
+      sb.rpc("admin_store_customers"),
+      sb.rpc("admin_store_referrals")
+    ]);
+    if(customers.error)throw customers.error;
+    if(referrals.error)throw referrals.error;
+    let local=[];try{local=JSON.parse(localStorage.getItem("up_u")||"[]")}catch(e){}
+    if(!Array.isArray(local))local=[];
+    const users=new Map(local.filter(u=>u&&u.e).map(u=>[String(u.e).toLowerCase(),u]));
+    for(const row of customers.data||[]){
+      const email=String(row.email||"").toLowerCase();if(!email)continue;
+      const d=row.data||{},prior=users.get(email)||{};
+      users.set(email,{...prior,e:email,n:d.n||prior.n||"",s:prior.s||"",h:prior.h||"",kv:prior.kv||2,rc:d.rc||prior.rc||"",a:d.a||prior.a||"",z:d.z||prior.z||"",v:d.v||prior.v||"",t:prior.t||d.t||Date.parse(row.updated_at)||Date.now()});
+    }
+    applyingRemote=true;
+    try{localStorage.setItem("up_u",JSON.stringify([...users.values()]));if(typeof uset==="function")uset()}finally{applyingRemote=false}
+    let refs=[];try{refs=JSON.parse(localStorage.getItem("up_rf")||"[]")}catch(e){}
+    if(!Array.isArray(refs))refs=[];
+    const merged=new Map(refs.filter(x=>x&&x.fe).map(x=>[String(x.fe).toLowerCase(),x]));
+    for(const x of referrals.data||[]){
+      const fe=String(x.referred_email||"").toLowerCase(),re=String(x.referrer_email||"").toLowerCase();
+      if(!fe||!re)continue;
+      merged.set(fe,{rc:x.referral_code,re,fe,fn:x.referred_name||"Client",t:Date.parse(x.created_at)||Date.now()});
+    }
+    applyingRemote=true;
+    try{localStorage.setItem("up_rf",JSON.stringify([...merged.values()]))}finally{applyingRemote=false}
+    try{if(typeof ulist==="function")ulist();if(typeof rflist==="function")rflist()}catch(e){}
+  }
   async function pushNewsletter(){
     if(!isAdmin)return;
     let local=[];try{local=JSON.parse(localStorage.getItem("up_n")||"[]")}catch(e){}
@@ -170,6 +200,7 @@
     await pullPacks();
     await pullNewsletter();
     await pullOrders();
+    await pullClientsAndReferrals().catch(e=>console.warn("Chargement comptes/parrainages:",e.message));
     await pullPromos();
     if(isAdmin){await pushPromos().catch(e=>console.warn("Publication des codes promo impossible:",e.message))}
     sb.channel("ultim-admin-sync")
@@ -179,6 +210,6 @@
       .on("postgres_changes",{event:"*",schema:"public",table:"promo_codes"},()=>pullPromos())
       .subscribe();
   }
-  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pullOrders();pushPromos().catch(console.warn)}})},0)});
+  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pullOrders();pullClientsAndReferrals().catch(console.warn);pushPromos().catch(console.warn)}})},0)});
   init().catch(e=>console.warn("Initialisation synchro admin:",e.message));
 })();
