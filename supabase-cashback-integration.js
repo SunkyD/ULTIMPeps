@@ -20,7 +20,10 @@
 
   function sumAdjustments(email) {
     return round2((adjustmentsByEmail.get(emailKey(email)) || [])
-      .reduce((sum, row) => sum + Number(row.amount || 0), 0));
+      .reduce((sum, row) => {
+        const amount = Math.abs(Number(row.amount || 0));
+        return sum + (String(row.direction || "credit").toLowerCase() === "debit" ? -amount : amount);
+      }, 0));
   }
 
   window.cbCalc = function (email) {
@@ -41,7 +44,7 @@
     if (!session || !session.user || !session.user.email) return false;
 
     let query = sb.from("store_cashback_adjustments")
-      .select("id,customer_email,amount,reason,created_at,created_by")
+      .select("id,customer_email,amount,direction,reason,created_at,created_by")
       .order("created_at", { ascending: false });
     if (!isAdmin) query = query.eq("customer_email", emailKey(session.user.email));
 
@@ -129,7 +132,7 @@
       }
       const { error } = await sb.from("store_cashback_adjustments").insert({
         customer_email: email,
-        amount: round2(amount),
+        amount: round2(Math.abs(amount)),
         direction: amount > 0 ? "credit" : "debit",
         reason: reason.trim(),
         admin_user_id: session.user.id,
