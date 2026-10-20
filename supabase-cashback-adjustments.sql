@@ -12,6 +12,11 @@ create table if not exists public.store_cashback_adjustments (
   created_by uuid references auth.users(id) on delete set null
 );
 
+-- Si la table existait déjà avant cette migration, CREATE TABLE IF NOT EXISTS
+-- ne lui ajoute pas les colonnes manquantes : on complète donc le schéma ici.
+alter table public.store_cashback_adjustments
+  add column if not exists created_by uuid references auth.users(id) on delete set null;
+
 create index if not exists store_cashback_adjustments_customer_email_idx
   on public.store_cashback_adjustments (lower(customer_email));
 
@@ -37,6 +42,9 @@ with check (
 
 grant select, insert, update, delete on public.store_cashback_adjustments to authenticated;
 grant usage, select on sequence public.store_cashback_adjustments_id_seq to authenticated;
+
+-- Actualise le cache de schéma de l'API Supabase après les changements.
+notify pgrst, 'reload schema';
 
 -- L'accès réel reste filtré par RLS : un client ne peut lire que son e-mail
 -- et seul l'administrateur autorisé peut créer/modifier/supprimer des ajustements.
