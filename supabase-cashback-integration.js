@@ -132,6 +132,7 @@
         amount: round2(amount),
         direction: amount > 0 ? "credit" : "debit",
         reason: reason.trim(),
+        admin_user_id: session.user.id,
         created_by: session.user.id
       });
       if (error) throw error;
