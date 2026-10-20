@@ -26,7 +26,11 @@ async function auth(email,password,name,rc,referralCode){
  let r=await sb.auth.signInWithPassword({email,password});
  if(!r.error&&r.data&&r.data.session){await sync();return "ok";}
  r=await sb.auth.signUp({email,password,options:{data:{name:name||"",rc:rc||"",referral_code:referralCode||""}}});
- if(r.error)throw r.error;\n // L’attribution est aussi transmise dans raw_user_meta_data : le trigger Supabase\n // bootstrap_store_customer doit la persister même si la confirmation e-mail est requise.\n if(r.data&&r.data.session){await sync();return "ok";}\n return "confirm";
+ if(r.error)throw r.error;
+ // L’attribution est aussi transmise dans raw_user_meta_data : le trigger Supabase
+ // bootstrap_store_customer doit la persister même si la confirmation e-mail est requise.
+ if(r.data&&r.data.session){await sync();return "ok";}
+ return "confirm";
 }
 if(typeof login==="function")window.ulog=async function(e){
  const f=new FormData(e.target),email=String(f.get("e")||"").trim().toLowerCase(),password=String(f.get("p")||"");
