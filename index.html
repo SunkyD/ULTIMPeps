@@ -832,8 +832,10 @@ document.querySelectorAll(".stats div").forEach(d=>{const t=d.firstChild&&d.firs
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll("section>h2,section>.sub,.feat div,details,.nl form").forEach(el=>{el.classList.add("rvl");io.observe(el)});
 document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const h=a.getAttribute("href");if(h.length<2||h=="#admin")return;const t=document.querySelector(h);if(!t)return;e.preventDefault();const w=$("wipe");w.classList.remove("go");void w.offsetWidth;w.classList.add("go");setTimeout(()=>t.scrollIntoView({behavior:"instant"}),330)});
 $("hv").innerHTML=[["v2","#0a6cff"],["v3","#00d4ff"],["v1","#1e90ff"]].map(a=>`<div class="hvv ${a[0]}">${vial(a[1])}</div>`).join("");
-const getN=()=>{try{const a=JSON.parse(localStorage.getItem("up_n")||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}};
-function nsub(e,src){e.preventDefault();const f=e.target,em=f.querySelector("input").value.trim().toLowerCase(),N=getN();
+const getNX=()=>{try{const a=JSON.parse(localStorage.getItem("up_nx")||"[]");return Array.isArray(a)?a.map(x=>String(x).trim().toLowerCase()):[]}catch(e){return[]}};
+const saveNX=a=>{try{localStorage.setItem("up_nx",JSON.stringify([...new Set(a.map(x=>String(x).trim().toLowerCase()))]));return 1}catch(e){return 0}};
+const getN=()=>{try{const a=JSON.parse(localStorage.getItem("up_n")||"[]"),blocked=new Set(getNX());return Array.isArray(a)?a.filter(x=>x&&x.e&&!blocked.has(String(x.e).trim().toLowerCase())):[]}catch(e){return[]}};
+function nsub(e,src){e.preventDefault();const f=e.target,em=f.querySelector("input").value.trim().toLowerCase();saveNX(getNX().filter(x=>x!==em));const N=getN();
 if(N.some(x=>x.e==em)){toast("Tu es déjà inscrit ✔");f.reset();return}
 const entry={e:em,t:Date.now(),...(src?{s:src}:{})};N.unshift(entry);
 try{localStorage.setItem("up_n",JSON.stringify(N))}catch(x){toast("Erreur d'enregistrement");return}
@@ -847,7 +849,7 @@ function nlist(){const N=getN(),wk=Date.now()-7*864e5;
 $("nk").innerHTML=[["Inscrits",N.length],["Cette semaine",N.filter(x=>x.t>wk).length]].map(a=>`<div class="kp"><small>${a[0]}</small><b>${a[1]}</b></div>`).join("");
 $("nl2").innerHTML=N.length?N.map(n=>`<div class="ar" style="grid-template-columns:1fr auto auto"><b style="text-transform:none;word-break:break-all">${esc(n.e)}</b><small>${fd(n.t)}${n.s=="pre"?" · pré-lancement":""}</small><button data-e="${esc(n.e)}" onclick="ndel(this)">Supprimer</button></div>`).join(""):`<p class="sub">Aucun inscrit pour le moment.</p>`;
 $("n_x").value=N.map(n=>n.e).join(", ")}
-function ndel(b){if(!b.dataset.s){b.dataset.s=1;b.textContent="Confirmer ?";setTimeout(()=>{b.dataset.s="";b.textContent="Supprimer"},3000);return}try{localStorage.setItem("up_n",JSON.stringify(getN().filter(x=>x.e!=b.dataset.e)))}catch(e){}nlist()}
+function ndel(b){if(!b.dataset.s){b.dataset.s=1;b.textContent="Confirmer ?";setTimeout(()=>{b.dataset.s="";b.textContent="Supprimer"},3000);return}const em=String(b.dataset.e||"").trim().toLowerCase();if(!em)return;const blocked=getNX();if(!blocked.includes(em))blocked.push(em);if(!saveNX(blocked)){toast("Impossible d’enregistrer la désinscription");return}try{localStorage.setItem("up_n",JSON.stringify(getN()))}catch(e){toast("Erreur d’enregistrement");return}nlist();toast("Adresse supprimée durablement ✔")}
 function nhref(a){const N=getN();if(!N.length){toast("Aucun inscrit");return false}const h="mailto:?bcc="+N.map(n=>n.e).join(",")+"&subject="+encodeURIComponent($("n_s").value)+"&body="+encodeURIComponent($("n_b").value);if(h.length>1800){toast("Trop d'inscrits pour un seul envoi : copie la liste ci-dessous");return false}a.href=h;return true}
 async function nexp(){const N=getN();if(!N.length){toast("Aucun inscrit");return}const bl=new Blob(["email;date_inscription\n"+N.map(n=>n.e+";"+new Date(n.t).toISOString().slice(0,10)).join("\n")],{type:"text/csv"});
 try{const D=window.claude&&await claude.use("downloads");if(D){await D.save({filename:"inscrits.csv",data:bl});return}}catch(e){if(e&&e.code=="not_granted")return}const a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="inscrits.csv";a.click()}
@@ -870,7 +872,7 @@ async function ulog(e){e.preventDefault();const w=lockWait("u");if(w>0)return to
 try{if(!u||u.h!=await hp(p,u.s,u.kv)){fail("u");return toast("E-mail ou mot de passe incorrect")}if(u.kv!=2){u.s=rnd(16);u.h=await kdf(p,u.s);u.kv=2;sU(L)}}catch(x){return toast("Navigateur non compatible")}okL("u");localStorage.setItem("up_se",em);uset();atab="o";arender();toast("Connexion réussie ✔")}
 async function ureg(e){e.preventDefault();const f=new FormData(e.target),em=f.get("e").trim().toLowerCase(),L=gU();if(L.some(x=>x.e==em))return toast("Un compte existe déjà avec cet e-mail");
 try{const s=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>x.toString(16)).join("");L.push({e:em,n:f.get("n").trim(),s,h:await kdf(f.get("p"),s),kv:2,rc:newRC(L),a:"",z:"",v:"",t:Date.now()})}catch(x){return toast("Navigateur non compatible")}if(!sU(L))return;refAttach(em,f.get("n"));
-if(f.get("nl")){const N=getN();if(!N.some(x=>x.e==em)){N.unshift({e:em,t:Date.now()});try{localStorage.setItem("up_n",JSON.stringify(N))}catch(x){}}}
+if(f.get("nl")){saveNX(getNX().filter(x=>x!==em));const N=getN();if(!N.some(x=>x.e==em)){N.unshift({e:em,t:Date.now()});try{localStorage.setItem("up_n",JSON.stringify(N))}catch(x){}}}
 localStorage.setItem("up_se",em);uset();atab="o";arender();toast("Compte créé ✔")}
 function usave(e){e.preventDefault();const f=new FormData(e.target),L=gU(),u=L.find(x=>x.e==U.e);Object.assign(u,{n:f.get("n").trim(),a:f.get("a").trim(),z:f.get("z").trim(),v:f.get("v").trim()});if(sU(L)){uset();toast("Infos enregistrées ✔");arender()}}
 function utrk(e){e.preventDefault();loadO();const f=new FormData(e.target),o=O.find(x=>x.id==f.get("i").trim().toUpperCase()&&(x.cu.e||"").toLowerCase()==f.get("e").trim().toLowerCase());$("trs").innerHTML=o?oc(o):`<p class="sub">Aucune commande trouvée avec ces informations.</p>`}
