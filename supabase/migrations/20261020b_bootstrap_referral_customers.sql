@@ -70,7 +70,7 @@ set email=excluded.email,
 
 -- Les associations déjà reçues dans les métadonnées sont aussi récupérées.
 insert into public.store_referrals(referrer_user_id,referred_user_id,referrer_email,referred_email,referral_code,referred_name)
-select ref.user_id, referred.user_id, lower(ref.email), lower(referred.email),
+select ref.user_id, referred.id, lower(ref.email), lower(referred.email),
        upper(trim(referred.raw_user_meta_data->>'referral_code')),
        left(coalesce(referred.raw_user_meta_data->>'name',referred.raw_user_meta_data->>'full_name',''),160)
 from auth.users referred
