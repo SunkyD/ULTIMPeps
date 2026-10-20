@@ -589,7 +589,7 @@ const ocard=o=>{const[lb,co]=ST[o.st]||["?","#fff"];return `<div class="oc" id="
 function badge(){const n=O.filter(o=>o.st=="new").length,b=$("nb");b.textContent=n;b.style.display=n?"":"none"}
 function olist(){rwAll();badge();$("of").innerHTML=[["all","Toutes"],["pay","À payer"],...Object.entries(ST).map(([k,v])=>[k,v[0]])].map(([k,l])=>`<button class="chip ${ofl==k?"on":""}" data-o="${k}">${l} (${k=="all"?O.length:O.filter(o=>fo(o,k)).length})</button>`).join("");
 const l=O.filter(o=>fo(o,ofl));$("ol").innerHTML=l.length?l.map(ocard).join(""):`<p class="sub">Aucune commande pour le moment. Elles s'affichent ici dès qu'un client commande.</p>`}
-function tabs(t){tab=t;const N={p:"tp",o:"to",s:"tt",k:"tc",n:"tn",u:"tu",x:"tx",c:"tcc",r:"trt",y:"tpy",z:"tpz"};for(const x in N){$(N[x]).style.display=x==t?"":"none";$("tb_"+x).classList.toggle("on",x==t)}if(t=="o")olist();if(t=="s"){stats();sfill()}if(t=="k")klist();if(t=="n")nlist();if(t=="u"){ulist();rflist()}if(t=="x")pkadm();if(t=="c")ctform();if(t=="r")rtlist();if(t=="y")payLoad();if(t=="z")preLoad()}
+function tabs(t){tab=t;const N={p:"tp",o:"to",s:"tt",k:"tc",n:"tn",u:"tu",x:"tx",c:"tcc",r:"trt",y:"tpy",z:"tpz"};for(const x in N){$(N[x]).style.display=x==t?"":"none";$("tb_"+x).classList.toggle("on",x==t)}if(t=="o")olist();if(t=="s"){stats();sfill()}if(t=="k")klist();if(t=="n")nlist();if(t=="u"){ulist();rflist();if(window.ULTIM_SYNC&&typeof window.ULTIM_SYNC.refreshAdminData==="function")window.ULTIM_SYNC.refreshAdminData().catch(e=>console.warn("Chargement clients/parrainages:",e.message))}if(t=="x")pkadm();if(t=="c")ctform();if(t=="r")rtlist();if(t=="y")payLoad();if(t=="z")preLoad()}
 $("of").onclick=e=>{const b=e.target.closest("[data-o]");if(b){ofl=b.dataset.o;olist()}};
 $("ol").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;const o=O.find(x=>x.id==b.dataset.i),a=b.dataset.a;if(!o)return;
 if(["ok","no","done","new"].includes(a)){if(a=="no"&&o.st!="no"){restock(o,1);kuse(o,-1)}if(a=="new"&&o.st=="no"){restock(o,-1);kuse(o,1)}o.st=a;saveO();olist()}
@@ -1092,7 +1092,7 @@ addEventListener("resize",rs,{passive:true});document.addEventListener("visibili
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=20261012a"></script>
 <script src="supabase-integration.js?v=82e00e0"></script>
-<script src="supabase-admin-integration.js?v=packdeleteinlinefix20261013"></script>
-<script src="supabase-account-integration.js?v=accounts1"></script>
+<script src="supabase-admin-integration.js?v=referrals20261020"></script>
+<script src="supabase-account-integration.js?v=referrals20261020"></script>
 </body>
 </html>
