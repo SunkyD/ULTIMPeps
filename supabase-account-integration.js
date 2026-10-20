@@ -16,6 +16,8 @@ async function sync(){
  else if(d&&!u){u={e:email,n:d.n||"",s:"",h:"",kv:2,rc:d.rc||"",a:d.a||"",z:d.z||"",v:d.v||"",t:d.t||Date.now()};list.push(u);localStorage.setItem("up_u",JSON.stringify(list));if(typeof window.uset==="function")window.uset();}
  else if(u){d={n:u.n||"",a:u.a||"",z:u.z||"",v:u.v||"",rc:u.rc||"",t:u.t||Date.now()};}
  if(u&&d){const w=await sb.from("customer_profiles").upsert({user_id:id,email,data:d,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(w.error)throw w.error;}
+ try{const rr=JSON.parse(localStorage.getItem("up_ref")||"null");if(rr&&rr.c&&Date.now()-Number(rr.t||0)<30*864e5){const linked=await sb.rpc("register_store_referral",{p_code:String(rr.c).toUpperCase(),p_name:(u&&u.n)||s.user.user_metadata?.name||""});if(linked.error)console.warn("Association parrainage serveur en attente de migration:",linked.error.message);}}catch(err){console.warn("Parrainage non synchronisé:",err.message)}
+ try{const mr=await sb.rpc("my_store_referrals");if(!mr.error&&Array.isArray(mr.data)){const rf=JSON.parse(localStorage.getItem("up_rf")||"[]"),map=new Map(rf.filter(x=>x&&x.fe).map(x=>[String(x.fe).toLowerCase(),x]));mr.data.forEach(x=>map.set(String(x.referred_email||"").toLowerCase(),{rc:x.referral_code,re:String(x.referrer_email||"").toLowerCase(),fe:String(x.referred_email||"").toLowerCase(),fn:x.referred_name||"Client",t:Date.parse(x.created_at)||Date.now()}));localStorage.setItem("up_rf",JSON.stringify([...map.values()]));}}catch(err){console.warn("Lecture des parrainages serveur:",err.message)}
  const r=await sb.from("store_orders").select("id,customer_email,data,updated_at").ilike("customer_email",email);if(r.error)throw r.error;
  const m=new Map(orders().map(o=>[String(o.id),o]));(r.data||[]).forEach(x=>{if(x&&x.id&&x.data)m.set(String(x.id),x.data)});
  localStorage.setItem("up_o",JSON.stringify([...m.values()]));if(typeof window.loadO==="function")window.loadO();if(typeof window.arender==="function")window.arender();return true;
@@ -35,7 +37,7 @@ if(typeof login==="function")window.ulog=async function(e){
 };
 if(typeof register==="function")window.ureg=async function(e){
  const f=new FormData(e.target),email=String(f.get("e")||"").trim().toLowerCase(),password=String(f.get("p")||""),name=String(f.get("n")||"").trim();
- if(users().some(x=>x.e===email))return register.apply(this,arguments);
+ if(users().some(x=>x.e===email)){try{const result=await auth(email,password,name);if(typeof window.toast==="function")window.toast(result==="ok"?"Compte synchronisé ✔":"Confirmez l’e-mail pour activer la synchronisation.");}catch(err){console.warn("Compte déjà présent localement, synchronisation différée:",err.message);await register.apply(this,arguments);}return;}
  await register.apply(this,arguments);const u=user();if(!u||u.e!==email||!password)return;
  try{const result=await auth(email,password,name);if(typeof window.toast==="function")window.toast(result==="ok"?"Compte créé et synchronisé ✔":"Confirmez l’e-mail reçu pour synchroniser ce compte sur les autres appareils.");}
  catch(err){console.warn("Sync inscription:",err.message);if(typeof window.toast==="function")window.toast("Compte local créé ; synchronisation distante indisponible.");}
