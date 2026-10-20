@@ -39,7 +39,7 @@ if(typeof register==="function")window.ureg=async function(e){
  const f=new FormData(e.target),email=String(f.get("e")||"").trim().toLowerCase(),password=String(f.get("p")||""),name=String(f.get("n")||"").trim();
  if(users().some(x=>x.e===email)){try{const local=users().find(x=>x.e===email);const rr=JSON.parse(localStorage.getItem("up_ref")||"null");const result=await auth(email,password,name,local&&local.rc,rr&&rr.c&&Date.now()-Number(rr.t||0)<30*864e5?rr.c:"");if(typeof window.toast==="function")window.toast(result==="ok"?"Compte synchronisé ✔":"Confirmez l’e-mail pour activer la synchronisation.");}catch(err){console.warn("Compte déjà présent localement, synchronisation différée:",err.message);await register.apply(this,arguments);}return;}
  await register.apply(this,arguments);const u=user();if(!u||u.e!==email||!password)return;
- try{const result=await auth(email,password,name);if(typeof window.toast==="function")window.toast(result==="ok"?"Compte créé et synchronisé ✔":"Confirmez l’e-mail reçu pour synchroniser ce compte sur les autres appareils.");}
+ try{const rr=JSON.parse(localStorage.getItem("up_ref")||"null");const result=await auth(email,password,name,u.rc,rr&&rr.c&&Date.now()-Number(rr.t||0)<30*864e5?rr.c:"");if(typeof window.toast==="function")window.toast(result==="ok"?"Compte créé et synchronisé ✔":"Confirmez l’e-mail reçu pour synchroniser ce compte sur les autres appareils.");}
  catch(err){console.warn("Sync inscription:",err.message);if(typeof window.toast==="function")window.toast("Compte local créé ; synchronisation distante indisponible.");}
 };
 if(typeof save==="function")window.usave=async function(e){await save.apply(this,arguments);try{await sync();}catch(err){console.warn("Sync profil:",err.message);}};
