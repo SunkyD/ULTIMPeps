@@ -167,6 +167,17 @@
   }
   window.ULTIM_SYNC={
     refreshAdminData:pullClientsAndReferrals,
+    deleteCustomer:async(email)=>{
+      const {data,error}=await sb.rpc("admin_delete_store_customer",{p_email:String(email||"").trim().toLowerCase()});
+      if(error)throw error;
+      if(data!==true)throw new Error("Aucun compte Supabase correspondant n'a été supprimé.");
+      let local=[];try{local=JSON.parse(localStorage.getItem("up_u")||"[]")}catch(e){}
+      if(!Array.isArray(local))local=[];
+      applyingRemote=true;try{localStorage.setItem("up_u",JSON.stringify(local.filter(u=>String(u.e||"").toLowerCase()!==String(email||"").trim().toLowerCase())))}finally{applyingRemote=false}
+      if(typeof uset==="function")uset();
+      if(typeof ulist==="function")ulist();
+      return true;
+    },
     submitOrder:async(order)=>{
       if(!order||!order.id||!order.cu||!order.cu.e)throw new Error("Commande invalide");
       const {data,error}=await sb.rpc("submit_store_order",{p_id:String(order.id),p_customer_email:String(order.cu.e),p_data:order});
