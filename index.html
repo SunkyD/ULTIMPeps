@@ -169,6 +169,116 @@ footer{border-top:1px solid var(--ln);padding:50px 4vw 30px;background:#02040b;c
 .pf{display:flex;max-width:520px}.pf input{flex:1;padding:14px;background:#000;border:1px solid var(--ln);color:#fff;font:16px var(--fb)}.pll{margin-top:28px;font-size:13px;color:var(--mu)}.pll a{color:var(--mu);text-decoration:underline}
 @media(max-width:860px){nav{display:none}header{flex-wrap:wrap;gap:10px}.sw{order:9;flex:1 0 100%}#q{width:100%}#sr{left:0;right:0;width:auto}.md{grid-template-columns:1fr}.md .vis{min-height:240px}.fg{grid-template-columns:1fr 1fr}.btn.o{margin:12px 0 0}}
 @media(prefers-color-scheme:light){:root{}}
+
+/* Optimisation mobile iOS / Android */
+html{width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:76px}
+body{min-width:0;width:100%;overscroll-behavior-x:none;-webkit-tap-highlight-color:transparent}
+img,svg,video,canvas{max-width:100%}
+input,textarea,select,button{max-width:100%;touch-action:manipulation}
+input,textarea,select{font-size:16px}
+button,a,summary{ -webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--b2);outline-offset:3px}
+@media(max-width:860px){
+  header{padding:10px max(16px,env(safe-area-inset-left)) 10px;gap:8px}
+  .logo{font-size:clamp(25px,7vw,32px)}
+  header .sp{display:none}
+  header .ib{padding:10px 8px;font-size:15px}
+  .sw{min-width:0}
+  #q{min-height:44px;clip-path:none;border-radius:8px}
+  nav{display:none}
+  .hero{min-height:auto;padding:clamp(54px,10vh,90px) 20px 48px}
+  .hero h1{font-size:clamp(46px,13vw,92px);overflow-wrap:anywhere}
+  .hero p{font-size:16px;max-width:100%;line-height:1.55}
+  .hero .hv{max-width:80vw}
+  .stats{gap:22px;margin-top:32px}
+  .stats div{font-size:36px}
+  section{padding:54px 18px}
+  h2{font-size:clamp(34px,8vw,54px);line-height:1.05}
+  .sub{margin-bottom:24px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .card{min-width:0}
+  .card:hover{transform:none}
+  .vis{height:clamp(150px,35vw,220px)}
+  .inf{padding:12px 12px 16px;min-width:0}
+  .inf small{font-size:12px;letter-spacing:.12em}
+  .inf h3{font-size:clamp(19px,4.5vw,25px);overflow-wrap:anywhere}
+  .pr{gap:8px;align-items:center;flex-wrap:wrap}
+  .pr b{font-size:27px}
+  .add{min-height:42px;padding:10px 12px}
+  .tools{gap:8px}
+  .chip{min-height:40px;padding:9px 13px;font-size:14px}
+  .btn{min-height:46px;padding:13px 22px;font-size:18px}
+  .btn.o{margin:10px 0 0}
+  .nl{padding:34px 18px}
+  .tgi{gap:16px}
+  #ac{width:100%;width:min(520px,100%);padding-bottom:env(safe-area-inset-bottom,0px)}
+  #ac>div{min-width:0}
+  #pre{padding-bottom:env(safe-area-inset-bottom,0px)}
+  .fg{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .md{grid-template-columns:minmax(0,1fr)}
+  .md .vis{min-height:190px}
+  .ob{grid-template-columns:minmax(0,1fr)}
+  .pr3{gap:8px}
+  .pr3 select,.pr3 input{min-width:0;width:100%}
+  .pf{width:100%}
+  #ckb{bottom:max(10px,env(safe-area-inset-bottom));padding:14px;width:calc(100% - 20px);gap:10px}
+  #ckb p{min-width:0;flex-basis:100%}
+}
+@media(max-width:520px){
+  .bar{font-size:11px;letter-spacing:.08em;padding:8px 10px}
+  header{gap:6px}
+  .logo{font-size:26px}
+  header .ib{font-size:13px;letter-spacing:.04em;padding:9px 6px}
+  .hero{padding:50px 16px 38px}
+  .hero h1{font-size:clamp(42px,12.8vw,68px);line-height:.98;margin:12px 0 18px}
+  .tag{font-size:14px;letter-spacing:.18em}
+  .hero .btn{width:100%;text-align:center;margin:8px 0 0}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .stats div{font-size:clamp(25px,7vw,34px)}
+  .stats small{font-size:10px;letter-spacing:.04em}
+  section{padding:44px 14px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .vis{height:150px}
+  .vial{max-width:70px;height:160px}
+  .inf{padding:10px 9px 13px}
+  .inf small{font-size:11px;letter-spacing:.08em}
+  .inf h3{font-size:19px;line-height:1.08}
+  .st{font-size:12px}
+  .pr{margin-top:10px}
+  .pr b{font-size:24px}
+  .pr b s{font-size:12px;margin-left:4px}
+  .add{width:100%;font-size:14px;padding:10px 8px}
+  .feat{grid-template-columns:minmax(0,1fr);gap:12px}
+  .tgi>div{min-width:0}
+  .tgi h2{font-size:30px}
+  .cdn{gap:8px}
+  .cdn div{flex:1;min-width:0;padding:10px 6px}
+  .cdn b{font-size:36px}
+  .qrow{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px}
+  .qrow .qp{grid-column:1}
+  .qs{grid-column:2;grid-row:1 / span 2}
+  .vr{grid-template-columns:1fr 1fr}
+  .vr button{grid-column:span 2}
+  .pr3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pr3 button{grid-column:span 2;min-height:40px}
+  .tbs{gap:5px}
+  .tbs>*{min-width:0}
+  .pf input{min-width:0}
+  details{padding:15px 0}
+  summary{font-size:19px;padding-right:8px}
+  #ckb .btn,#ckb button{flex:1}
+}
+@media(max-width:360px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .vis{height:220px}
+  .vial{height:190px;max-width:90px}
+  .stats{grid-template-columns:1fr 1fr}
+  header .ib{font-size:12px}
+}
+@supports(padding:max(0px)){
+  body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+}
+
 </style>
 </head>
 <body>
