@@ -897,7 +897,7 @@ $("ul2").innerHTML=rows.length?rows.map(r=>{const u=r.u;return `<div class="oc">
 $("ul2").onclick=e=>{const b=e.target.closest("[data-k],[data-d]");if(!b)return;
 if(b.dataset.k){tabs("k");$("k_f").value=b.dataset.k;if(!$("k_c").value)kgen();$("k_v").focus();return}
 if(!b.dataset.s){b.dataset.s=1;b.textContent="Confirmer ?";setTimeout(()=>{b.dataset.s="";b.textContent="Supprimer le compte"},3000);return}
-if(sU(gU().filter(x=>x.e!=b.dataset.d))){uset();ulist();toast("Compte supprimé")}};
+(async()=>{try{if(!window.ULTIM_SYNC||typeof window.ULTIM_SYNC.deleteCustomer!=="function")throw new Error("Suppression distante indisponible. Recharge la page.");await window.ULTIM_SYNC.deleteCustomer(b.dataset.d);toast("Compte supprimé de Supabase ✔")}catch(err){console.error("Suppression compte:",err);toast("Suppression impossible : "+(err.message||"erreur serveur"))}})()};
 let PK=[],pkf=0,pked=null;try{PK=JSON.parse(localStorage.getItem("up_pk")||"[]");if(!Array.isArray(PK))PK=[]}catch(e){PK=[]}
 PK=PK.filter(k=>k&&(k.items||k.pid)).map(k=>k.items?k:{...k,items:[{pid:k.pid,q:k.q,n:k.n}]});
 const savePK=()=>{try{localStorage.setItem("up_pk",JSON.stringify(PK));return 1}catch(e){toast("Stockage plein");return 0}};
@@ -1064,7 +1064,7 @@ const getRF=()=>{try{const a=JSON.parse(localStorage.getItem("up_rf")||"[]");ret
 const shortN=n=>{const p=String(n||"").trim().split(/\s+/).filter(Boolean);return p.length?p[0]+(p[1]?" "+p[1][0].toUpperCase()+".":""):"Client"};
 function newRC(L){let c;do c="UP"+[...crypto.getRandomValues(new Uint8Array(5))].map(x=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x%31]).join("");while(L.some(u=>u.rc==c));return c}
 const refGet=()=>{try{const r=JSON.parse(localStorage.getItem("up_ref")||"null");return r&&Date.now()-r.t<30*864e5?r:null}catch(e){return null}};
-function refCapture(c){c=String(c||"").toUpperCase();if(!/^[A-Z0-9]{4,12}$/.test(c))return;try{const o=refGet();if(!o||o.c!=c)localStorage.setItem("up_ref",JSON.stringify({c,t:Date.now()}))}catch(e){}if(gU().some(u=>u.rc==c))toast("🎁 Tu es parrainé(e) : "+(RWS().w>0?"−"+RWS().w+" % sur ta première commande !":"bienvenue chez ULTIM'Peps !"))}
+function refCapture(c){c=String(c||"").toUpperCase();if(!/^[A-Z0-9]{4,12}$/.test(c))return;try{const o=refGet();if(!o||o.c!=c)localStorage.setItem("up_ref",JSON.stringify({c,t:Date.now()}))}catch(e){}toast("🎁 Lien de parrainage détecté : "+(RWS().w>0?"−"+RWS().w+" % sur ta première commande !":"bienvenue chez ULTIM'Peps !"))}
 function refAttach(em,nm,guest){const r=refGet();if(!r)return;const L=gU(),p=L.find(u=>u.rc==r.c);if(!p||p.e==em)return;if(guest){loadO();if(O.some(o=>(o.cu.e||"").toLowerCase()==em)||L.some(u=>u.e==em&&u.t<r.t))return}const R=getRF();if(R.some(x=>x.fe==em))return;R.unshift({rc:r.c,re:p.e,fe:em,fn:shortN(nm),t:Date.now()});saveRF(R)}
 function refLink(c){let b=String(getS().u||"").trim();if(!/^https:\/\//i.test(b))b=location.href.split(/[?#]/)[0];try{const u=new URL(b);u.searchParams.set("ref",c);u.hash="";return u.toString()}catch(e){return b+(b.includes("?")?"&":"?")+"ref="+c}}
 function qrSvg(t){if(!window.qrcode)return"";try{const q=qrcode(0,"M");q.addData(t);q.make();const n=q.getModuleCount();let d="";for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+="M"+c+" "+r+"h1v1h-1z";return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 ${n+8} ${n+8}" shape-rendering="crispEdges"><rect x="-4" y="-4" width="${n+8}" height="${n+8}" fill="#fff"/><path d="${d}" fill="#030610"/></svg>`}catch(e){return""}}
@@ -1092,7 +1092,7 @@ addEventListener("resize",rs,{passive:true});document.addEventListener("visibili
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=20261012a"></script>
 <script src="supabase-integration.js?v=82e00e0"></script>
-<script src="supabase-admin-integration.js?v=referrals20261020c"></script>
-<script src="supabase-account-integration.js?v=referrals20261020c"></script>
+<script src="supabase-admin-integration.js?v=referrals20261020d"></script>
+<script src="supabase-account-integration.js?v=referrals20261020d"></script>
 </body>
 </html>
