@@ -279,6 +279,69 @@ button,a,summary{ -webkit-tap-highlight-color:transparent}
   body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 }
 
+
+/* Navigation mobile et finitions premium */
+.mobile-dock{display:none}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+button,a,input,select,textarea,summary{-webkit-touch-callout:manipulation}
+button,a{touch-action:manipulation}
+.card,.feat>div,.kp,.oc{border-radius:10px}
+#dr,#ac{height:100dvh;max-height:100dvh}
+#dr .db,#ac>div{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.md{max-height:min(90dvh,900px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#sr{max-height:min(55dvh,440px);overflow-y:auto;overscroll-behavior:contain}
+.toast{max-width:calc(100vw - 28px);text-align:center;border-radius:8px;bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+@media(max-width:860px){
+ body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+ .mobile-dock{position:fixed;z-index:80;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));background:rgba(3,6,16,.94);border-top:1px solid rgba(30,144,255,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 -8px 28px rgba(0,0,0,.28);margin:0;text-transform:none;letter-spacing:0}
+ .mobile-dock a,.mobile-dock button{min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:8px;background:transparent;color:var(--mu);font:600 11px var(--fb);text-decoration:none;padding:4px 2px}
+ .mobile-dock a:active,.mobile-dock button:active{background:rgba(30,144,255,.16);color:var(--b2)}
+ .mobile-dock span{font-size:22px;line-height:1.1;color:var(--b2)}
+ .mobile-dock small{font-size:11px;line-height:1.2;white-space:nowrap}
+ .mobile-dock b{display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 4px;border-radius:20px;background:var(--b);color:#001;font-size:10px}
+ .hero{min-height:min(760px,calc(100svh - 100px));padding-top:48px;padding-bottom:42px}
+ .hero .tag{font-size:clamp(11px,2.8vw,15px);letter-spacing:.16em;line-height:1.5}
+ .hero h1{letter-spacing:-.025em}
+ .hero .btn{width:100%;max-width:420px;text-align:center;clip-path:none;border-radius:8px}
+ .hero .btn.o{margin:10px 0 0}
+ .tools{overflow-x:auto;flex-wrap:nowrap;padding:2px 2px 10px;margin-right:-4px;scrollbar-width:thin;scroll-snap-type:x proximity}
+ .tools .chip{flex:none;scroll-snap-align:start}
+ .grid{gap:10px}
+ .card{overflow:hidden;clip-path:none}
+ .vis{height:clamp(132px,38vw,210px)}
+ .inf{padding:12px 10px 14px}
+ .inf small{font-size:10px;letter-spacing:.1em}
+ .inf h3{font-size:clamp(16px,4.4vw,22px);line-height:1.15;min-height:2.3em}
+ .pr{align-items:stretch;flex-direction:column;gap:9px}
+ .pr b{font-size:25px}
+ .add{width:100%;min-height:44px;border-radius:6px}
+ .md{width:calc(100% - 20px);max-height:calc(100dvh - 24px);margin:auto;overflow-y:auto}
+ .md .vis{min-height:150px}
+ .mi{padding:22px 18px}
+ .mi h3{font-size:clamp(30px,8vw,42px);line-height:1.05}
+ .age{padding:16px}
+ .age>div{width:100%;padding:28px 20px;border-radius:12px}
+ .age h2{font-size:clamp(32px,9vw,46px)}
+ #dr,#ac{border-radius:14px 14px 0 0;border-left:1px solid var(--b)}
+ .df{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+ #ckb{bottom:calc(78px + env(safe-area-inset-bottom,0px));max-height:40dvh;overflow:auto}
+ footer{padding-bottom:28px}
+}
+@media(max-width:380px){
+ .logo{font-size:24px}
+ header .ib{font-size:11px;padding:9px 5px;letter-spacing:.04em}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .vis{height:126px}
+ .inf{padding:10px 8px 12px}
+ .pr b{font-size:22px}
+ .hero h1{font-size:clamp(39px,12vw,52px)}
+ .stats{gap:14px}
+ .stats div{font-size:30px}
+ .mobile-dock{padding-left:4px;padding-right:4px}
+}
+@media(hover:none){.card:hover,.feat div:hover,.btn:hover{transform:none;box-shadow:none;filter:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.mobile-dock,.card,.btn{transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -293,6 +356,12 @@ button,a,summary{ -webkit-tap-highlight-color:transparent}
 <button class="ib" id="hb" onclick="acc(1)">Compte</button><button class="ib" onclick="tw()">♥ <span class="cnt" id="wc">0</span></button>
 <button class="ib" onclick="cart(1)">Panier <span class="cnt" id="cc">0</span></button>
 </header>
+<nav class="mobile-dock" aria-label="Navigation rapide">
+<a href="#shop"><span aria-hidden="true">⌂</span><small>Boutique</small></a>
+<a href="#packs"><span aria-hidden="true">◇</span><small>Packs</small></a>
+<a href="#faq"><span aria-hidden="true">?</span><small>FAQ</small></a>
+<button type="button" onclick="cart(1)" aria-label="Ouvrir le panier"><span aria-hidden="true">▣</span><small>Panier <b id="mcc">0</b></small></button>
+</nav>
 
 <main id="top">
 <div class="hero"><div class="hv" id="hv"></div>
@@ -1011,13 +1080,12 @@ addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&String(e.k
 {let lc=0,lt=0;document.querySelector("footer .logo").addEventListener("click",()=>{const n=Date.now();lc=n-lt<1500?lc+1:1;lt=n;if(lc>=5){lc=0;adm(1)}})}
 ["click","keydown","input"].forEach(v=>$("ad").addEventListener(v,()=>{if(auth)idle()},true));
 cats();render();upd();olist();
-// fond animé
-const cv=$("bg"),cx=cv.getContext("2d");let pts=[];
-function rs(){cv.width=innerWidth;cv.height=innerHeight;pts=Array.from({length:Math.min(70,innerWidth/18)},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4}))}
-function an(){cx.clearRect(0,0,cv.width,cv.height);const g=cx.createRadialGradient(cv.width*.8,0,0,cv.width*.8,0,cv.width*.8);g.addColorStop(0,"rgba(30,144,255,.18)");g.addColorStop(1,"transparent");cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);
-pts.forEach((a,i)=>{a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>cv.width)a.vx*=-1;if(a.y<0||a.y>cv.height)a.vy*=-1;cx.fillStyle="#1e90ff";cx.fillRect(a.x,a.y,2,2);for(let j=i+1;j<pts.length;j++){const b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<130){cx.strokeStyle="rgba(30,144,255,"+(1-d/130)*.3+")";cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}}});requestAnimationFrame(an)}
-addEventListener("resize",rs);rs();an();
-</script>
+// Fond animé adaptatif : moins de calculs sur mobile, pause en arrière-plan et respect de la réduction des animations
+const cv=$("bg"),cx=cv&&cv.getContext("2d");let pts=[],raf=0,lastFrame=0;
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function rs(){if(!cv||!cx)return;const dpr=Math.min(window.devicePixelRatio||1,1.5);cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);cv.style.width=innerWidth+"px";cv.style.height=innerHeight+"px";cx.setTransform(dpr,0,0,dpr,0,0);pts=Array.from({length:reduceMotion?0:Math.min(innerWidth<700?22:48,Math.ceil(innerWidth/(innerWidth<700?30:24)))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.32,vy:(Math.random()-.5)*.32}));if(reduceMotion){cx.clearRect(0,0,innerWidth,innerHeight);return}if(!document.hidden&&!raf)raf=requestAnimationFrame(an)}
+function an(ts){raf=0;if(document.hidden||reduceMotion||!cv||!cx)return;if(ts-lastFrame<33){raf=requestAnimationFrame(an);return}lastFrame=ts;cx.clearRect(0,0,innerWidth,innerHeight);const g=cx.createRadialGradient(innerWidth*.8,0,0,innerWidth*.8,0,innerWidth*.8);g.addColorStop(0,"rgba(30,144,255,.14)");g.addColorStop(1,"transparent");cx.fillStyle=g;cx.fillRect(0,0,innerWidth,innerHeight);pts.forEach((a,i)=>{a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>innerWidth)a.vx*=-1;if(a.y<0||a.y>innerHeight)a.vy*=-1;cx.fillStyle="#1e90ff";cx.fillRect(a.x,a.y,2,2);for(let j=i+1;j<pts.length;j++){const b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);if(d<115){cx.strokeStyle="rgba(30,144,255,"+(1-d/115)*.24+")";cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}}});raf=requestAnimationFrame(an)}
+addEventListener("resize",rs,{passive:true});document.addEventListener("visibilitychange",()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0}else if(!reduceMotion&&!raf)raf=requestAnimationFrame(an)});rs();</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=20261012a"></script>
 <script src="supabase-integration.js?v=82e00e0"></script>
