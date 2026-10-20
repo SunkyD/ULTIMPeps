@@ -166,6 +166,7 @@
     await pushNewsletter();
   }
   window.ULTIM_SYNC={
+    refreshAdminData:pullClientsAndReferrals,
     submitOrder:async(order)=>{
       if(!order||!order.id||!order.cu||!order.cu.e)throw new Error("Commande invalide");
       const {data,error}=await sb.rpc("submit_store_order",{p_id:String(order.id),p_customer_email:String(order.cu.e),p_data:order});
