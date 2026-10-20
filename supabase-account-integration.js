@@ -26,7 +26,11 @@ async function auth(email,password,name,rc,referralCode){
  let r=await sb.auth.signInWithPassword({email,password});
  if(!r.error&&r.data&&r.data.session){await sync();return "ok";}
  r=await sb.auth.signUp({email,password,options:{data:{name:name||"",rc:rc||"",referral_code:referralCode||""}}});
- if(r.error)throw r.error;if(r.data&&r.data.session){await sync();return "ok";}return "confirm";
+ if(r.error)throw r.error;
+ // L’attribution est aussi transmise dans raw_user_meta_data : le trigger Supabase
+ // bootstrap_store_customer doit la persister même si la confirmation e-mail est requise.
+ if(r.data&&r.data.session){await sync();return "ok";}
+ return "confirm";
 }
 if(typeof login==="function")window.ulog=async function(e){
  const f=new FormData(e.target),email=String(f.get("e")||"").trim().toLowerCase(),password=String(f.get("p")||"");
@@ -39,7 +43,7 @@ if(typeof register==="function")window.ureg=async function(e){
  const f=new FormData(e.target),email=String(f.get("e")||"").trim().toLowerCase(),password=String(f.get("p")||""),name=String(f.get("n")||"").trim();
  if(users().some(x=>x.e===email)){try{const local=users().find(x=>x.e===email);const rr=JSON.parse(localStorage.getItem("up_ref")||"null");const result=await auth(email,password,name,local&&local.rc,rr&&rr.c&&Date.now()-Number(rr.t||0)<30*864e5?rr.c:"");if(typeof window.toast==="function")window.toast(result==="ok"?"Compte synchronisé ✔":"Confirmez l’e-mail pour activer la synchronisation.");}catch(err){console.warn("Compte déjà présent localement, synchronisation différée:",err.message);await register.apply(this,arguments);}return;}
  await register.apply(this,arguments);const u=user();if(!u||u.e!==email||!password)return;
- try{const rr=JSON.parse(localStorage.getItem("up_ref")||"null");const result=await auth(email,password,name,u.rc,rr&&rr.c&&Date.now()-Number(rr.t||0)<30*864e5?rr.c:"");if(typeof window.toast==="function")window.toast(result==="ok"?"Compte créé et synchronisé ✔":"Confirmez l’e-mail reçu pour synchroniser ce compte sur les autres appareils.");}
+ try{const rr=JSON.parse(localStorage.getItem("up_ref")||"null");const result=await auth(email,password,name,u.rc,rr&&rr.c&&Date.now()-Number(rr.t||0)<30*864e5?rr.c:"");if(typeof window.toast==="function")window.toast(result==="ok"?"Compte créé et synchronisé ✔":"Compte créé : confirme l’e-mail. Le parrainage et le profil seront synchronisés côté serveur dès l’activation.");}
  catch(err){console.error("Sync inscription Supabase:",err);if(typeof window.toast==="function")window.toast("Compte local créé, mais inscription Supabase refusée : "+String(err&&err.message||err).slice(0,150));}
 };
 if(typeof save==="function")window.usave=async function(e){await save.apply(this,arguments);try{await sync();}catch(err){console.warn("Sync profil:",err.message);}};
