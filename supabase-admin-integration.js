@@ -116,6 +116,12 @@
     try{if(typeof loadO==="function")loadO();if(typeof olist==="function")olist()}catch(e){}
     await pushOrders();
   }
+  async function pullCashbackAdjustments(){
+    if(!isAdmin)return;
+    const {data,error}=await sb.rpc("admin_store_cashback_adjustments");if(error)throw error;
+    applyingRemote=true;try{localStorage.setItem("up_cba",JSON.stringify((data||[]).map(x=>({...x,email:String(x.customer_email||"").toLowerCase()}))));}finally{applyingRemote=false}
+    try{if(typeof ulist==="function")ulist()}catch(e){}
+  }
   async function pullClientsAndReferrals(){
     if(!isAdmin)return;
     const [customers,referrals]=await Promise.all([
@@ -167,6 +173,7 @@
   }
   window.ULTIM_SYNC={
     refreshAdminData:pullClientsAndReferrals,
+    addCashbackAdjustment:async(email,amount,direction,reason)=>{const {data,error}=await sb.rpc("admin_add_cashback_adjustment",{p_email:String(email||"").trim().toLowerCase(),p_amount:Number(amount),p_direction:direction,p_reason:String(reason||"").trim()});if(error)throw error;await pullCashbackAdjustments();return data;},
     deleteCustomer:async(email)=>{
       const {data,error}=await sb.rpc("admin_delete_store_customer",{p_email:String(email||"").trim().toLowerCase()});
       if(error)throw error;
@@ -212,6 +219,7 @@
     await pullPacks();
     await pullNewsletter();
     await pullOrders();
+    await pullCashbackAdjustments().catch(e=>console.warn("Chargement corrections cashback:",e.message));
     await pullClientsAndReferrals().catch(e=>console.warn("Chargement comptes/parrainages:",e.message));
     await pullPromos();
     if(isAdmin){await pushPromos().catch(e=>console.warn("Publication des codes promo impossible:",e.message))}
@@ -219,9 +227,10 @@
       .on("postgres_changes",{event:"*",schema:"public",table:"store_settings"},()=>pullSettings())
       .on("postgres_changes",{event:"*",schema:"public",table:"store_newsletter"},()=>pullNewsletter())
       .on("postgres_changes",{event:"*",schema:"public",table:"store_orders"},()=>pullOrders())
+      .on("postgres_changes",{event:"*",schema:"public",table:"store_cashback_adjustments"},()=>pullCashbackAdjustments())
       .on("postgres_changes",{event:"*",schema:"public",table:"promo_codes"},()=>pullPromos())
       .subscribe();
   }
-  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pullOrders();pullClientsAndReferrals().catch(console.warn);pushPromos().catch(console.warn)}})},0)});
+  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{getSession().then(v=>{isAdmin=v;if(v){pullSettings();pullPacks();pullNewsletter();pullOrders();pullCashbackAdjustments().catch(console.warn);pullClientsAndReferrals().catch(console.warn);pushPromos().catch(console.warn)}})},0)});
   init().catch(e=>console.warn("Initialisation synchro admin:",e.message));
 })();
