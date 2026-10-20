@@ -1043,7 +1043,7 @@ const getCB=()=>{try{const a=JSON.parse(localStorage.getItem("up_cb")||"[]");ret
 const CBS=()=>{const S=getS();return{r:S.cb!=null&&S.cb!==""?+S.cb:5,m:S.cm!=null&&S.cm!==""?+S.cm:80,s:"done"}},RK={new:0,ok:1,ship:2,done:3};let useCB=false;
 function cbCalc(em){loadO();const S=CBS();let pend=0,av=0;const L=[];
 getRF().filter(x=>x.re==em).forEach(x=>O.filter(o=>(o.cu.e||"").toLowerCase()==x.fe&&o.t>=x.t-5e3&&o.st!="no"&&o.pay!="wait").forEach(o=>{const a=Math.round(Math.max(0,o.sub-(o.disc||0)-(o.cb||0))*S.r)/100,ok=o.st==="done";if(ok)av+=a;else pend+=a;L.push({t:o.t,fn:x.fn,oid:o.id,a,ok})}));
-const U2=getCB().filter(u=>u.re==em&&O.some(z=>z.id==u.oid&&z.st!="no")),used=U2.reduce((a,u)=>a+u.a,0),r2=n=>Math.round(n*100)/100;
+const U2=getCB().filter(u=>u.re==em&&O.some(z=>z.id==u.oid&&z.st!="no")),usedLocal=U2.reduce((a,u)=>a+u.a,0),usedOrder=O.filter(o=>(o.cu?.e||"").toLowerCase()===String(em).toLowerCase()&&o.st!=="no"&&o.pay!=="wait"&&Number(o.cb)>0&&!U2.some(u=>String(u.oid)===String(o.id))).reduce((a,o)=>a+Number(o.cb||0),0),used=usedLocal+usedOrder,r2=n=>Math.round(n*100)/100;
 const adj=(()=>{try{const a=JSON.parse(localStorage.getItem("up_cba")||"[]");return Array.isArray(a)?a.filter(x=>String(x.customer_email||x.email||"").toLowerCase()===String(em).toLowerCase()):[]}catch(e){return[]}})(),manual=adj.reduce((n,x)=>n+(x.direction==="credit"?1:-1)*Number(x.amount||0),0);adj.forEach(x=>L.push({t:Date.parse(x.created_at)||Date.now(),fn:"Correction manuelle",a:Number(x.amount||0),ok:true,manual:true,tx:(x.direction==="credit"?"Ajout":"Retrait")+" — "+(x.reason||"Correction admin")}));return{bal:Math.max(0,r2(av-used+manual)),pend:r2(pend),av:r2(av),used:r2(used),L:L.sort((a,b)=>b.t-a.t),U:U2}}
 function cbAmt(t){if(!U||!useCB||t<CBS().m)return 0;return Math.round(Math.min(cbCalc(U.e).bal,t)*100)/100}
 function cbBlock(t){if(!U)return"";const S=CBS(),b=cbCalc(U.e).bal;if(b<=0)return"";if(t<S.m)return `<div class="sub" style="font-size:13px;margin:6px 0">Cashback disponible : ${eur(b)} — utilisable dès ${S.m} € d'achat (encore ${eur(S.m-t)}).</div>`;return `<label class="cl" style="justify-content:flex-start;margin:8px 0"><input type="checkbox" ${useCB?"checked":""} onchange="useCB=this.checked;cart(1)" style="width:auto"> Utiliser mon cashback (solde ${eur(b)})</label>`}
@@ -1095,7 +1095,7 @@ addEventListener("resize",rs,{passive:true});document.addEventListener("visibili
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=20261012a"></script>
 <script src="supabase-integration.js?v=82e00e0"></script>
-<script src="supabase-admin-integration.js?v=referrals20261020d"></script>
-<script src="supabase-account-integration.js?v=referrals20261020g"></script>
+<script src="supabase-admin-integration.js?v=cashback-adjustments-20261020a"></script>
+<script src="supabase-account-integration.js?v=cashback-adjustments-20261020a"></script>
 </body>
 </html>
