@@ -80,3 +80,27 @@ where coalesce(referred.raw_user_meta_data->>'referral_code','') ~* '^[A-Z0-9]{4
   and ref.user_id<>referred.id
   and coalesce(referred.email,'')<>''
 on conflict(referred_user_id) do nothing;
+
+
+-- Suppression distante d'un compte depuis l'administration.
+create or replace function public.admin_delete_store_customer(p_email text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_email text := lower(trim(coalesce(p_email,'')));
+begin
+  if lower(coalesce(auth.jwt()->>'email','')) <> 'logan.decupper1@gmail.com' then
+    raise exception 'Accès administrateur requis' using errcode='42501';
+  end if;
+  if v_email = '' then
+    raise exception 'Adresse e-mail manquante' using errcode='22023';
+  end if;
+  delete from auth.users where lower(email)=v_email;
+  return found;
+end;
+$$;
+revoke all on function public.admin_delete_store_customer(text) from public, anon;
+grant execute on function public.admin_delete_store_customer(text) to authenticated;
