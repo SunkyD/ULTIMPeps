@@ -130,6 +130,7 @@
       const { error } = await sb.from("store_cashback_adjustments").insert({
         customer_email: email,
         amount: round2(amount),
+        direction: amount > 0 ? "credit" : "debit",
         reason: reason.trim(),
         created_by: session.user.id
       });
